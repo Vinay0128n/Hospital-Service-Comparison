@@ -1,5 +1,5 @@
 # Use OpenJDK 19 as base image
-FROM openjdk:19-jdk-slim
+FROM eclipse-temurin:19-jdk-alpine
 
 # Set working directory
 WORKDIR /app
