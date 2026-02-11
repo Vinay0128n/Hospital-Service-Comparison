@@ -33,6 +33,10 @@ logs/
 .env.test.local
 .env.production.local
 
+# Keep template files
+!.env.template
+!.env.example
+
 # Database
 *.db
 *.sqlite
