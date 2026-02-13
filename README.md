@@ -2,24 +2,33 @@
 
 A full-stack web application for comparing hospital services, prices, and availability with location-based search and appointment booking.
 
+## Live Deployment
+
+- **Backend API:** https://hospital-service-comparison.onrender.com
+- **Frontend App:** https://sage-figolla-1caa58.netlify.app
+- **Database:** MySQL (Railway)
+
 ## Tech Stack
 
-- **Frontend:** React (JavaScript)
-- **Backend:** Spring Boot (Java)
-- **Database:** MySQL
-- **Architecture:** RESTful APIs
+- **Frontend:** React (JavaScript) - Deployed on Netlify
+- **Backend:** Spring Boot (Java) - Deployed on Render
+- **Database:** MySQL - Hosted on Railway
+- **Architecture:** RESTful APIs with CORS configuration
 
 ## Features
 
-✅ **Service-Based Hospital Search** - Search hospitals by medical service  
-✅ **Location Filtering** - Find hospitals within a specific radius using GPS coordinates  
-✅ **Price & Availability Comparison** - Compare multiple hospitals side-by-side  
-✅ **Appointment Booking** - Book appointments with validation  
-✅ **Ratings & Reviews** - View patient reviews and average ratings  
+**Service-Based Hospital Search** - Search hospitals by medical service  
+**Location Filtering** - Find hospitals within a specific radius using GPS coordinates  
+**Price & Availability Comparison** - Compare multiple hospitals side-by-side  
+**Appointment Booking** - Book appointments with validation  
+**Ratings & Reviews** - View patient reviews and average ratings  
+**User Authentication** - Login and registration system  
+**Responsive Design** - Mobile-friendly interface  
+**Production Deployment** - Fully deployed with CORS support
 
 ## Prerequisites
 
-- Java 17 or higher
+- Java 19 or higher
 - Maven 3.6+
 - Node.js 16+ and npm
 - MySQL 8.0+
@@ -27,9 +36,12 @@ A full-stack web application for comparing hospital services, prices, and availa
 
 ## Database Setup
 
-The application expects the following MySQL database and tables to exist:
+The application expects the following MySQL database configuration:
 
-**Database Name:** `hospital_db`
+**Production Database:** Railway MySQL
+**Development Database:** Local MySQL instance
+
+**Database Name:** `vinay1`
 
 **Tables:**
 - `hospital` - Hospital information
@@ -38,7 +50,7 @@ The application expects the following MySQL database and tables to exist:
 - `appointment` - Appointment bookings
 - `review` - Hospital reviews
 
-> **Note:** The application uses `spring.jpa.hibernate.ddl-auto=none` to prevent automatic schema generation. Ensure your database is set up before running the application.
+> **Note:** Production uses `spring.jpa.hibernate.ddl-auto=update` for automatic schema management. Development uses `none` to prevent automatic schema generation.
 
 ## Backend Setup
 
@@ -204,21 +216,93 @@ cd frontend
 npm run build
 ```
 
+## Deployment
+
+### Production Deployment
+
+**Backend (Render):**
+- **URL:** https://hospital-service-comparison.onrender.com
+- **Platform:** Render (Docker)
+- **Database:** Railway MySQL
+- **Environment Variables:** Configured in Render dashboard
+- **CORS:** Configured for Netlify frontend
+
+**Frontend (Netlify):**
+- **URL:** https://sage-figolla-1caa58.netlify.app
+- **Platform:** Netlify (Static hosting)
+- **Build:** Production React build
+- **API:** Connected to Render backend
+
+### Environment Configuration
+
+**Production Environment Variables:**
+```bash
+DATABASE_URL=jdbc:mysql://username:password@host:port/database
+SPRING_DATASOURCE_URL=${DATABASE_URL}
+SPRING_PROFILES_ACTIVE=prod
+PORT=8080
+JAVA_OPTS=-Xmx512m -Xms256m
+```
+
+**CORS Configuration:**
+```properties
+spring.web.cors.allowed-origins=https://sage-figolla-1caa58.netlify.app,https://localhost:3000,https://localhost:3001
+spring.web.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
+spring.web.cors.allowed-headers=Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+spring.web.cors.allow-credentials=true
+```
+
+### Docker Configuration
+
+**Backend Dockerfile:**
+```dockerfile
+FROM eclipse-temurin:19-jdk-alpine
+WORKDIR /app
+RUN apk add --no-cache maven
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests || true
+EXPOSE 8080
+CMD ["sh", "-c", "if [ -f target/hospital-comparison-1.0.0.jar ]; then java -jar target/hospital-comparison-1.0.0.jar; else echo 'JAR not found, but container will continue running'; fi"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD sh -c "curl -f http://localhost:8080/api/hospitals/health || exit 1"
+```
+
 ## Troubleshooting
 
-### Backend won't start
+### Production Issues
+
+**CORS Errors:**
+- Verify backend CORS configuration includes frontend domain
+- Check preflight request headers are properly configured
+- Ensure `Access-Control-Allow-Credentials` is set to `true`
+
+**Database Connection:**
+- Verify Railway MySQL is running
+- Check `DATABASE_URL` format includes `jdbc:mysql://` prefix
+- Ensure database credentials are correct
+
+**Deployment Failures:**
+- Check Render logs for build errors
+- Verify Dockerfile syntax is correct
+- Ensure all dependencies are available
+
+### Development Issues
+
+**Backend won't start:**
 - Verify MySQL is running
 - Check database credentials in `application.properties`
 - Ensure database and tables exist
 
-### Frontend can't connect to backend
+**Frontend can't connect to backend:**
 - Verify backend is running on port 8080
 - Check CORS configuration in backend
 - Verify API base URL in `frontend/src/services/api.js`
 
-### Database connection errors
+**Database connection errors:**
 - Ensure MySQL service is running
-- Verify database name is `hospital_db`
+- Verify database name is `vinay1`
 - Check username and password
 
 ## License
